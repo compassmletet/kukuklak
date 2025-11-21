@@ -8,6 +8,6 @@ compatibility_date = "2024-05-01"
 binding = "DB" # Nama binding (nggak kita pake di script, tapi wajib ada)
 database_name = "database-buku" # Ini NAMA yang bakal kita pake di script
 
-database_id = "2d0f5ad6-f856-47a3-ab55-4322f1f00dc9" # ID database lu
+database_id = "2906e733-6731-4efe-b63b-53cfd61f88e5" # ID database lu
 
 
