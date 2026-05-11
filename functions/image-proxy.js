@@ -1,12 +1,21 @@
 // Hardcode: /functions/image-proxy.js
-// This function fetches an external image and serves it
-// from our own domain to act as a proxy.
 
-export async function onRequestGet(context) {
+export async function onRequest(context) {
   const { request } = context;
   const url = new URL(request.url);
 
-  // 1. Ambil URL gambar aslinya dari parameter ?url=
+  // 1. Handle CORS Pre-flight
+  if (request.method === "OPTIONS") {
+    return new Response(null, {
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, HEAD, OPTIONS",
+        "Access-Control-Max-Age": "86400",
+      },
+    });
+  }
+
+  // 2. Ambil URL target
   const imageUrl = url.searchParams.get("url");
 
   if (!imageUrl) {
@@ -14,33 +23,44 @@ export async function onRequestGet(context) {
   }
 
   try {
-    // 2. Fetch gambar aslinya
-    // Kita tambahin User-Agent biar sopan
-    const imageResponse = await fetch(imageUrl, {
+    // 3. Siapkan Request ke Sumber Asli
+    // --- PERUBAHAN UTAMA DI SINI ---
+    // Kita PAKSA pakai "GET" walaupun bot mintanya "HEAD".
+    // Ini supaya server gambar asli (Picsum dll) tidak menolak dengan error 405.
+    const proxyRequest = new Request(imageUrl, {
+      method: "GET", 
       headers: {
-        "User-Agent": "Flowork-Image-Proxy/1.0 (Cloudflare Worker)",
-      },
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+        "Accept": "image/*"
+      }
     });
 
-    if (!imageResponse.ok) {
-      return new Response("Failed to fetch image", {
-        status: imageResponse.status,
-      });
+    // 4. Fetch Gambar
+    const imageResponse = await fetch(proxyRequest);
+
+    // 5. Siapkan Header Respon
+    const newHeaders = new Headers(imageResponse.headers);
+    
+    // Header Wajib untuk Bot Podcast
+    newHeaders.set("Access-Control-Allow-Origin", "*");
+    
+    // Pastikan Content-Type terisi
+    if (!newHeaders.has("Content-Type")) {
+      newHeaders.set("Content-Type", "image/jpeg");
     }
 
-    // 3. Ambil Tipe Konten aslinya (e.g., image/jpeg)
-    const contentType =
-      imageResponse.headers.get("Content-Type") || "application/octet-stream";
+    // Cache
+    newHeaders.set("Cache-Control", "public, max-age=86400, s-maxage=86400");
 
-    // 4. Kirim balik gambarnya dengan header yang udah di-cache
+    // 6. Return Response
+    // Kita kembalikan body full. Jika bot cuma minta HEAD, 
+    // sistem Cloudflare otomatis hanya akan mengirim headernya saja.
     return new Response(imageResponse.body, {
-      headers: {
-        "Content-Type": contentType,
-        // Cache di Edge Cloudflare selama 1 hari
-        "Cache-Control": "public, s-maxage=86400, max-age=86400",
-      },
+      status: imageResponse.status,
+      headers: newHeaders
     });
+
   } catch (e) {
-    return new Response(`Error proxying image: ${e.message}`, { status: 500 });
+    return new Response(`Proxy Error: ${e.message}`, { status: 500 });
   }
 }
