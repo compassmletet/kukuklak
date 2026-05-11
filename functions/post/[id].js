@@ -1,189 +1,263 @@
-// Hardcode: /functions/post/[id].js
+// Path: functions/post/[id].js
 
-// --- FUNGSI TRUNCATE ---
-function truncate(str, length = 155) {
-  if (!str) return "";
-  const cleanStr = str.replace(/<[^>]*>?/gm, "");
-  if (cleanStr.length <= length) return cleanStr;
-  return cleanStr.substring(0, length) + "...";
+// ==================================================================
+// KONFIGURASI SPINTAX (TETAP SAMA)
+// ==================================================================
+const DESC_PARTS_A = [
+  "{TITLE} {stands as|represents|functions as} a {compelling|remarkable|powerful} testament to the {power|art|craft} of {well-crafted|sophisticated|expert} storytelling, {offering|presenting|delivering} a narrative that is as {intellectually stimulating|profoundly engaging} as it is {emotionally resonant|deeply moving}. From the {very first|opening} chapter, the author {establishes|creates|constructs} a world that feels both {expansive|vast} and {intimately detailed|richly textured}, inviting readers to {lose themselves|immerse themselves} in a journey that {transcends|defies|goes beyond} the boundaries of its genre. The pacing is {masterfully|expertly} handled, ensuring that every {plot point|twist} carries {significant weight|real impact}.",
+  "In the {landscape|realm|context} of contemporary literature, {TITLE} {emerges|stands out|shines} as a {sophisticated|refined|deep} exploration of its core themes, blending {intricate|complex} plot development with a {profound|significant} understanding of the human condition. The author’s voice is {distinct|unique|original} and confident, weaving a {tapestry|web|network} of events that are both {unpredictable|surprising} and {deeply satisfying|rewarding}. It is {rare|uncommon} to find a work that {balances|harmonizes} high-stakes tension with {quiet|serene}, reflective moments so {seamlessly|perfectly}.",
+  "{TITLE} {offers|provides|delivers} an {immersive|captivating} escape into a {masterfully constructed|brilliantly designed} narrative, {characterized|defined} by its {atmospheric depth|vivid detail} and the {undeniable|absolute} authenticity of its world-building. Rather than {relying on|following} conventional tropes, the story {carves its own path|creates its own trail}, exploring {complex|intricate} dynamics through a lens of {clarity|precision} and {nuanced intention|deep purpose}. The prose is {elegant|graceful} yet accessible, serving as a {perfect vessel|ideal medium} for this story."
+];
+const DESC_PARTS_B = [
+  "What {truly|really} {distinguishes|sets apart} this work is the {meticulous|careful|detailed} attention paid to character {progression|growth|evolution} and the {subtle|delicate} interplay between {internal conflict|personal struggle} and {external pressure|outside forces}. As the narrative of {TITLE} {progresses|unfolds|develops}, the layers of the story are {peeled back|revealed} to {reveal|showcase} a core that is both {surprising|unexpected} and {inevitable|logical}. The interactions are portrayed with a {refreshing|notable} degree of {realism|authenticity}.",
+  "The {thematic richness|depth of themes} in {TITLE} provides a {sturdy|solid|firm} foundation for its narrative arcs, {encouraging|promoting} a level of {engagement|interaction} that goes beyond {simple consumption|casual reading}. Readers will find themselves {reflecting on|pondering} the choices made by the characters, finding {parallels|connections} in their own lives while being {transported|carried away} to a {different|unique} reality. The structural integrity of the book is {remarkable|outstanding|impressive}.",
+  "Delving {deeper|further} into the pages of {TITLE}, one {discovers|uncovers|finds} a narrative {rhythm|flow|pace} that is both {comforting|familiar} and {challenging|provocative}, {pushing the boundaries|expanding the limits} of what readers {expect|anticipate} from this genre. The author has a {gift|knack|talent} for description, using {language|prose} to create {vivid|striking} imagery that brings the {setting|environment} and the {emotional landscape|mood} to life with {striking|exceptional} clarity."
+];
+const DESC_PARTS_C = [
+  "Furthermore, the {technical execution|skillful delivery} of the prose in {TITLE} ensures that the {reading|listening} experience is {smooth|fluid} and uninterrupted, allowing the {themes|core messages} to take center stage. The {balance|equilibrium} between dialogue and {descriptive passages|narration} is handled with {professional grace|expert precision}, ensuring that the world feels {lived-in|authentic} and the conversations feel {organic|natural}. This level of {craftsmanship|artistry} is {indicative of|a sign of} a deep respect for the reader’s {intelligence|time}.",
+  "Beyond the {primary|main} plot, {TITLE} {excels|surpasses expectations} in creating a sense of {time and place|atmosphere} that is almost {tangible|physical}. The {environmental storytelling|scenic detail} complements the character arcs {perfectly|ideally}, providing a backdrop that is {essential|vital} to the story’s impact. Whether through {quiet|soft} moments of introspection or {high-energy|intense} sequences, the author maintains a {consistent|steady} quality that {is rarely seen|sets a high bar}."
+];
+const DESC_PARTS_D = [
+  "In conclusion, for those who {value|appreciate} depth and a story that {respects|honors} its characters, {TITLE} is an {essential|must-have} addition to your library. Whether you {choose|prefer} to {immse yourself|lose yourself} in the {professional narration|premium audio} of an **Audible Free Trial** or {explore|read} every page through **Kindle Unlimited**, the power of the narrative remains {undiminished|equally strong}. It is a work that {bridges the gap|connects} between casual enjoyment and {serious literary merit|true engagement} across all digital formats.",
+  "Ultimately, the experience of {exploring|reading} {TITLE} is one of {discovery|enlightenment}. This title {invites|calls for} a deeper connection, making it the {perfect|ideal} candidate for your next **Audible Premium Plus** selection or **Kindle digital** download. For anyone looking to {access|unlock} a world that is both {challenging|demanding} and {rewarding|satisfying}, this book provides a {remarkable|prime} opportunity to {utilize|maximize} your **Amazon member benefits** for a truly {seamless|premium} experience.",
+  "As the final {chapters|pages} of {TITLE} draw to a close, the reader is left with a {sense of fulfillment|lasting impression}. The resolution {satisfies|delivers} on every level, especially when {experienced|accessed} through the {high-quality|convenient} ecosystem of **Audible's narrated library** or the {vast|expansive} reach of **Kindle's digital edition**. It stands as a {rare find|true gem} that justifies its place in any modern collection, {highly recommended|perfectly suited} for those seeking {quality|top-tier} storytelling today."
+];
+
+// ==================================================================
+// HELPER FUNCTIONS (TETAP SAMA)
+// ==================================================================
+function stringToHash(s){let h=0;if(!s)return h;for(let i=0;i<s.length;i++){h=((h<<5)-h)+s.charCodeAt(i);h=h&h}return Math.abs(h)}
+function spinText(text, seed) {
+  return text.replace(/\{([^{}]+)\}/g, (match, content) => {
+    if (content === "TITLE") return match;
+    const choices = content.split("|");
+    const index = stringToHash(seed + content) % choices.length;
+    return choices[index];
+  });
+}
+function getSpintaxDesc(t) {
+  const judulAsli = t && t !== "Title Book" ? t : "This book";
+  const h = stringToHash(judulAsli);
+  let p1 = DESC_PARTS_A[h % DESC_PARTS_A.length];
+  let p2 = DESC_PARTS_B[h % DESC_PARTS_B.length];
+  let p3 = DESC_PARTS_C[h % DESC_PARTS_C.length];
+  let p4 = DESC_PARTS_D[h % DESC_PARTS_D.length];
+  p1 = spinText(p1, h + "a");
+  p2 = spinText(p2, h + "b");
+  p3 = spinText(p3, h + "c");
+  p4 = spinText(p4, h + "d");
+  const regexTitle = new RegExp("{TITLE}", "g");
+  p1 = p1.replace(regexTitle, judulAsli);
+  p2 = p2.replace(regexTitle, judulAsli);
+  p3 = p3.replace(regexTitle, judulAsli);
+  p4 = p4.replace(regexTitle, judulAsli);
+  return `<p>${p1}</p><p>${p2}</p><p>${p3}</p><p>${p4}</p>`;
 }
 
-// --- FUNGSI FETCH POST ---
-async function getPost(db, id) {
-  const stmt = db.prepare("SELECT * FROM Buku WHERE KodeUnik = ?").bind(id);
-  const result = await stmt.first();
-  return result;
+// ==================================================================
+// LOGIKA SCRAPING & FALLBACK (UPDATED FROM)
+// ==================================================================
+async function getPostFromDB(db, id) {
+  try { if (!db) return null; const cleanId = id.toUpperCase(); const stmt = db.prepare("SELECT Judul, Image, Author, Kategori, KodeUnik, judul_seo, deskripsi FROM Buku WHERE KodeUnik = ?").bind(cleanId); return await stmt.first(); } catch(e) { return null; }
 }
 
-// ====================================================================
-// TEMPLATE 1: HALAMAN 404 (FAKE PDF + SIGNUP LOCK)
-// ====================================================================
-function render404Page() {
-  return `
-    <!DOCTYPE html>
-    <html lang="en">
-      <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Secure Document Viewer</title>
-        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&display=swap" rel="stylesheet" />
-        <style>
-          * { margin: 0; padding: 0; box-sizing: border-box; }
-          body { font-family: "Poppins", sans-serif; background-color: #525659; overflow: hidden; height: 100vh; position: relative; }
-          
-          /* LAYER 1: PDF BURAM */
-          .pdf-viewer-container { filter: blur(6px); opacity: 0.8; pointer-events: none; user-select: none; height: 100%; display: flex; flex-direction: column; align-items: center; }
-          .pdf-header { width: 100%; height: 50px; background-color: #323639; display: flex; align-items: center; padding: 0 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-          .fake-menu { width: 20px; height: 2px; background: #aaa; margin-right: 5px; box-shadow: 0 5px 0 #aaa, 0 -5px 0 #aaa; }
-          .fake-title { width: 150px; height: 10px; background: #555; border-radius: 4px; margin-left: 15px; }
-          .pdf-page { background: white; width: 800px; max-width: 90%; height: 120vh; margin-top: 20px; padding: 50px; box-shadow: 0 0 15px rgba(0,0,0,0.5); }
-          .skeleton-line { background: #e0e0e0; height: 12px; margin-bottom: 15px; border-radius: 2px; }
-          .skeleton-img { background: #ddd; height: 200px; width: 100%; margin-bottom: 30px; border-radius: 4px; }
-          .w-100 { width: 100%; } .w-80 { width: 80%; } .w-60 { width: 60%; } .w-40 { width: 40%; }
-          .h-title { height: 24px; margin-bottom: 30px; background: #333; }
+async function fetchGoogleBooks(isbn) {
+    try { const url = `https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`; const r = await fetch(url); const json = await r.json(); if (json.totalItems > 0 && json.items[0].volumeInfo) { const info = json.items[0].volumeInfo; let img = ""; if (info.imageLinks) { img = (info.imageLinks.thumbnail || info.imageLinks.smallThumbnail).replace('http:', 'https:').replace('&edge=curl', ''); } return { found: true, title: info.title, author: info.authors ? info.authors[0] : "Unknown", image: img }; } } catch (e) {} return { found: false };
+}
 
-          /* LAYER 2: OVERLAY */
-          .overlay-container { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 10; background: rgba(0, 0, 0, 0.5); }
-          .card-box { background: white; padding: 40px; border-radius: 15px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.3); max-width: 90%; width: 450px; animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); border-top: 5px solid #28a745; }
-          .lock-icon { margin-bottom: 15px; color: #dc3545; }
-          .headline-text { font-size: 1.4rem; color: #333; margin-bottom: 10px; font-weight: 700; }
-          .sub-text { font-size: 1rem; color: #666; margin-bottom: 30px; line-height: 1.5; }
+async function scrapeGoodreadsSearch(asin) {
+    try { const url = `https://www.goodreads.com/search?q=${asin}`; const r = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0' } }); const html = await r.text(); let title = "Unknown Title"; let author = "Unknown Author"; const authorMatch = html.match(/class="ContributorLink__name"[^>]*data-testid="name">([^<]+)<\/span>/i) || html.match(/class="authorName"[^>]*>.*?<span itemprop="name">([^<]+)<\/span>/s); if (authorMatch && authorMatch[1]) author = authorMatch[1].trim(); if (r.url.includes("/book/show/")) { const h1Match = html.match(/<h1[^>]*>([^<]+)<\/h1>/i); if (h1Match && h1Match[1]) title = h1Match[1].trim(); return { found: true, title, author }; } let titleMatch = html.match(/class="bookTitle"[^>]*>.*?<span[^>]*>([^<]+)<\/span>/s); if (titleMatch && titleMatch[1]) { title = titleMatch[1].trim().replace(/&amp;/g, '&'); return { found: true, title, author }; } } catch (e) { } return { found: false };
+}
 
-          /* TOMBOL HIJAU SIGNUP */
-          .signup-btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; background-color: #28a745; color: white; font-size: 18px; font-weight: 700; padding: 18px 30px; text-decoration: none; border-radius: 50px; box-shadow: 0 10px 20px rgba(40, 167, 69, 0.3); transition: transform 0.2s; cursor: pointer; width: 100%; text-transform: uppercase; }
-          .signup-btn:hover { transform: scale(1.05); background-color: #218838; }
-          .signup-btn:active { transform: scale(0.95); }
-          @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        </style>
-      </head>
-      <body>
-        <div class="pdf-viewer-container">
-          <div class="pdf-header"><div class="fake-menu"></div><div class="fake-title"></div></div>
-          <div class="pdf-page">
-            <div class="skeleton-line h-title w-60"></div><div class="skeleton-img"></div>
-            <div class="skeleton-line w-100"></div><div class="skeleton-line w-100"></div>
-            <div class="skeleton-line w-80"></div><div class="skeleton-line w-100"></div>
-            <br><div class="skeleton-line w-100"></div><div class="skeleton-line w-40"></div>
-          </div>
-        </div>
-        <div class="overlay-container">
-          <div class="card-box">
-            <svg class="lock-icon" xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-            <h2 class="headline-text">Registration Required</h2>
-            <p class="sub-text">This document is protected. Please create a free account to view and download the full content.</p>
-            <a href="#" class="signup-btn" onclick="openMyLinks()">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
-              SIGN UP & DOWNLOAD
-            </a>
-          </div>
-        </div>
-        <script>
-          function openMyLinks() {
-            var link_utama = 'https://adclub.g2afse.com/click?pid=1860&offer_id=21';
-            var link_adstera = 'https://www.effectivegatecpm.com/xr7j10z1r?key=73a9402da2964f3c92209293558508e5';
-            window.open(link_utama, '_blank');
-            window.location.href = link_adstera;
-          }
-        </script>
-      </body>
-    </html>
+async function scrapeDirectGoodreads(id) {
+    try { const url = `https://www.goodreads.com/book/show/${id}`; const r = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0' } }); if (!r.ok) return { found: false }; const html = await r.text(); const titleMatch = html.match(/<meta property="og:title" content="([^"]+)"/); const imageMatch = html.match(/<meta property="og:image" content="([^"]+)"/); const authorMatch = html.match(/class="ContributorLink__name"[^>]*data-testid="name">([^<]+)<\/span>/i); if (titleMatch && titleMatch[1]) { return { found: true, title: titleMatch[1], image: imageMatch ? imageMatch[1] : "", author: authorMatch ? authorMatch[1].trim() : "Unknown Author" }; } } catch (e) { } return { found: false };
+}
+
+async function scrapeGoogleSearch(query) {
+    try { const url = `https://www.google.com/search?q=${encodeURIComponent(query)}`; const r = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0' } }); const html = await r.text(); const h3Match = html.match(/<h3[^>]*>([^<]+)<\/h3>/); if (h3Match && h3Match[1]) { let title = h3Match[1].replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'"); return { found: true, title: title.replace(/ - Amazon\.com.*/i, '').replace(/ - Amazon.*/i, '') }; } } catch (e) { } return { found: false };
+}
+
+async function getRedirectData(id) {
+  try { const targetUrl = `https://www.goodreads.com/book_link/follow/3?book_id=${id}&source=compareprices`; const r = await fetch(targetUrl, { headers: { 'User-Agent': 'Mozilla/5.0' }, redirect: 'follow' }); const bnMatch = r.url.match(/ean=(\d{13})/) || r.url.match(/\/(\d{13})/); if (bnMatch && bnMatch[1]) return { found: true, id: bnMatch[1] }; } catch(e) {} return { found: false };
+}
+
+async function getDataFallback(id) {
+  const cleanId = id.toUpperCase();
+  let d = { Judul: "Restricted Document", Image: "", Author: "Unknown Author", Kategori: "General", KodeUnik: cleanId, judul_seo: "", deskripsi: "" };
+  try {
+    if (cleanId.startsWith("A-") || /^B[A-Z0-9]{9}$/.test(cleanId)) { 
+        const realId = cleanId.startsWith("A-") ? cleanId.substring(2) : cleanId; 
+        d.Image = `https://images-na.ssl-images-amazon.com/images/P/${realId}.01.LZZZZZZZ.jpg`; 
+        const gr = await scrapeGoodreadsSearch(realId); 
+        if (gr.found) { d.Judul = gr.title; d.Author = gr.author; } 
+        else { const gSearch = await scrapeGoogleSearch(`amazon book ${realId}`); if (gSearch.found) d.Judul = gSearch.title; } 
+        return d; 
+    }
+    if (cleanId.startsWith("B-") || /^\d{9}[\d|X]$|^\d{13}$/.test(cleanId.replace(/-/g,""))) { 
+        const realId = cleanId.startsWith("B-") ? cleanId.substring(2) : cleanId; 
+        const cleanIsbn = realId.replace(/-/g,""); 
+        d.Image = `https://covers.openlibrary.org/b/isbn/${cleanIsbn}-L.jpg`; 
+        const gb = await fetchGoogleBooks(cleanIsbn); 
+        if (gb.found) { d.Judul = gb.title; d.Author = gb.author; if (gb.image) d.Image = gb.image; } 
+        return d; 
+    }
+    if (cleanId.startsWith("C-") || /^\d{1,9}$/.test(cleanId)) { 
+        const realId = cleanId.startsWith("C-") ? cleanId.substring(2) : cleanId; 
+        const gr = await scrapeDirectGoodreads(realId); 
+        if (gr.found) { d.Judul = gr.title; d.Image = gr.image; d.Author = gr.author; return d; } 
+        const redir = await getRedirectData(realId); 
+        if (redir.found) { const gb = await fetchGoogleBooks(redir.id); if (gb.found) { d.Judul = gb.title; d.Author = gb.author; d.Image = gb.image; } } 
+        return d; 
+    }
+  } catch (e) { } return d;
+}
+
+// ==================================================================
+// RENDERER & CPA LOGIC
+// ==================================================================
+
+function renderBookPage(post, ACTUAL_HOSTNAME, countryCode, continent) {
+  const pageTitle = post.judul_seo && post.judul_seo.trim() !== "" ? post.judul_seo : post.Judul;
+  const finalDescription = post.deskripsi && post.deskripsi.trim() !== "" 
+    ? `<p>${post.deskripsi.replace(/\n/g, '</p><p>')}</p>` 
+    : getSpintaxDesc(post.Judul);
+  const coverImage = post.Image || "https://via.placeholder.com/300x450?text=No+Cover";
+  const domainName = ACTUAL_HOSTNAME.replace('https://', '').replace('http://', '').split('/')[0].toUpperCase();
+  const rawHostname = ACTUAL_HOSTNAME.replace('https://', '').replace('http://', '').split('/')[0].toLowerCase();
+
+  // --- CPA LINKS CONFIGURATION ---
+  const LINK_A = "https://lowest-prices.eu/a/1wOzMiq8P3fXl8Q"; 
+  const LINK_B = "https://lowest-prices.eu/a/R6mrXf5NLMFOA8w"; 
+  const LINK_C = "https://lowest-prices.eu/a/YEwBZt62gEFVLoN"; 
+  const LINK_D = "https://lowest-prices.eu/a/KrNkGUqYlhAzgD";  
+
+  // --- ADSTERRA TOP BANNER (728x90) ---
+  const ADSTERRA_TOP_BANNER = `
+    <div style="text-align:center; margin:10px 0; overflow:hidden;">
+       <script type="text/javascript">
+       	atOptions = {
+       		'key' : '6c75db738aadb52bd488e133d7bffd1f',
+       		'format' : 'iframe',
+       		'height' : 90,
+       		'width' : 728,
+       		'params' : {}
+       	};
+       </script>
+       <script type="text/javascript" src="https://www.highperformanceformat.com/6c75db738aadb52bd488e133d7bffd1f/invoke.js"></script>
+    </div>
   `;
-}
 
-// ====================================================================
-// TEMPLATE 2: HALAMAN POSTINGAN NORMAL
-// ====================================================================
-function renderPage(post, SITE_URL) {
-  const metaDescription = truncate(post.Deskripsi);
-  const placeholderImage = "https://via.placeholder.com/1200x630";
-  let displayImageUrl = placeholderImage; 
-  let metaImageUrl = placeholderImage; 
+  let buttonHtml = "";
+  let mobileStickyHtml = "";
 
-  if (post.Image) {
-    const encodedImageUrl = encodeURIComponent(post.Image);
-    const proxiedUrl = `${SITE_URL}/image-proxy?url=${encodedImageUrl}`;
-    displayImageUrl = proxiedUrl;
-    metaImageUrl = proxiedUrl;
-  }
+  const audibleLink = ["AT", "CH"].includes(countryCode) ? LINK_B : LINK_A;
+  const audibleText = "Start Audible Audiobooks Trial";
+  buttonHtml += `<a href="${audibleLink}" class="btn btn-audible" target="_blank" rel="nofollow sponsored">${audibleText}</a>
+                 <p class="disclosure-text">Start your 30-day free trial. Cancel anytime.</p>`;
+  mobileStickyHtml += `<a href="${audibleLink}" class="btn-sm btn-audible" target="_blank" rel="nofollow sponsored">Audible Free Trial</a>`;
+
+  buttonHtml += `<a href="${LINK_C}" class="btn btn-kindle" style="background: #192f2d; margin-top: 12px;" target="_blank" rel="nofollow sponsored">Summarize Book with Blinkist</a>
+                 <p class="disclosure-text">Get the key insights in 15 minutes.</p>`;
+  mobileStickyHtml += `<a href="${LINK_C}" class="btn-sm btn-kindle" style="background: #192f2d;" target="_blank" rel="nofollow sponsored">Blinkist Summary</a>`;
+
+  buttonHtml += `<a href="${LINK_D}" class="btn btn-edition" style="background: #232f3e; color: #fff; margin-top: 12px;" target="_blank" rel="nofollow sponsored">Find Rare Editions on AbeBooks</a>`;
+  mobileStickyHtml += `<a href="${LINK_D}" class="btn-sm btn-edition" style="background: #232f3e; color: #fff;" target="_blank" rel="nofollow sponsored">Shop AbeBooks</a>`;
 
   return `
-    <!DOCTYPE html>
-    <html lang="en">
-      <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>${post.Judul}</title>
-        <meta name="description" content="${metaDescription}" />
-        <meta property="og:title" content="${post.Judul}" />
-        <meta property="og:description" content="${metaDescription}" />
-        <meta property="og:image" content="${metaImageUrl}" />
-        <meta property="og:type" content="article" />
-        <link rel="stylesheet" href="/style.css?v=1.1" />
-        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet" />
-      </head>
-      <body>
-        <a href="/" class="back-link">&larr; Back to all posts</a>
-        <main class="post-detail-container">
-          <article class="post-detail-content">
-            <header class="post-detail-header">
-              <h1>${post.Judul}</h1>
-              <p class="post-meta">By <strong>${post.Author}</strong> in <em>${post.Kategori || "General"}</em></p>
-              ${post.Image ? `<img src="${displayImageUrl}" alt="${post.Judul}" class="post-detail-image" />` : ""}
-            </header>
-
-            <div class="download-container">
-              <a target="_blank" rel="noopener noreferrer" class="download-btn" style="cursor: pointer; background-color: #28a745; border-color: #28a745;" onclick="openMyLinks()">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
-                <span>SIGN UP & DOWNLOAD</span>
-              </a>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="referrer" content="no-referrer-when-downgrade">
+    <title>${pageTitle}</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #1e293b; padding-bottom: 80px; }
+        .navbar { height: 64px; background: white; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; position: fixed; top: 0; width: 100%; z-index: 100; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .nav-title { font-weight: 700; color: #2563eb; font-size: 20px; font-family: 'Poppins'; }
+        .main-container { display: flex; max-width: 1100px; margin: 96px auto 40px auto; padding: 0 24px; gap: 40px; }
+        .sidebar { width: 320px; flex-shrink: 0; }
+        .book-card { background: white; padding: 24px; border-radius: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; position: sticky; top: 96px; }
+        .pdf-cover-img { width: 100%; border-radius: 12px; margin-bottom: 20px; }
+        .btn-group { margin-top: 20px; display: flex; flex-direction: column; gap: 4px; }
+        .btn { display: inline-flex; align-items: center; justify-content: center; width: 100%; padding: 16px; font-weight: 700; border: none; border-radius: 12px; cursor: pointer; text-decoration: none; font-size: 14px; transition: 0.2s; text-align: center; }
+        .btn-audible { background: #f59e0b; color: #000; }
+        .btn-kindle { background: #0ea5e9; color: #fff; }
+        .btn:hover { opacity: 0.9; }
+        .disclosure-text { font-size: 11px; color: #64748b; margin-top: 4px; margin-bottom: 12px; text-align: center; line-height: 1.4; }
+        .mobile-sticky-bar { display: none; position: fixed; bottom: 0; left: 0; width: 100%; background: white; padding: 12px 20px; box-shadow: 0 -4px 10px rgba(0,0,0,0.1); z-index: 200; gap: 10px; }
+        .btn-sm { flex: 1; padding: 12px; font-size: 11px; border-radius: 8px; text-align: center; font-weight: 700; text-decoration: none; }
+        .legal-footer { text-align: center; padding: 40px 20px; font-size: 13px; color: #94a3b8; border-top: 1px solid #e2e8f0; margin-top: 40px; }
+        .legal-links { margin-bottom: 15px; }
+        .legal-links a { color: #64748b; text-decoration: none; margin: 0 12px; cursor: pointer; font-weight: 600; }
+        @media (max-width: 768px) { .main-container { flex-direction: column; margin-top: 80px; } .sidebar { width: 100%; } .book-card { position: static; } .mobile-sticky-bar { display: flex; } body { padding-bottom: 110px; } }
+    </style>
+</head>
+<body>
+    <nav class="navbar"><div class="nav-title"><a href="/" style="text-decoration:none; color:#2563eb;">${domainName}</a></div></nav>
+    <div class="main-container">
+        <aside class="sidebar">
+            <div class="book-card">
+                <img src="${coverImage}" class="pdf-cover-img" alt="${post.Judul}">
+                <h1 style="font-size: 20px; margin: 0 0 8px 0;">${post.Judul}</h1>
+                <p>Author: ${post.Author}</p>
+                <div class="btn-group">
+                    ${buttonHtml}
+                </div>
             </div>
+        </aside>
+        <main class="content-area">
+            ${ADSTERRA_TOP_BANNER}
+            
+            <div class="book-content" style="margin-top:20px;">
+                <h2>Description & Summary</h2>
+                <div style="line-height: 1.8;">${finalDescription}</div>
+            </div>
+            
 
-            <section class="post-content-body">${post.Deskripsi}</section>
-          </article>
+            <footer class="legal-footer">
+                <div class="legal-links">
+                    <a onclick="openLegal('about')">About Us</a> | <a onclick="openLegal('disclaimer')">Disclaimer</a> | <a onclick="openLegal('contact')">Contact</a> | <a onclick="openLegal('tos')">Terms of Service</a>
+                </div>
+                <p>Copyright © 2026 ${domainName}. All rights reserved.</p>
+            </footer>
         </main>
-        <script>
-        function openMyLinks() {
-            var link_utama = 'https://adclub.g2afse.com/click?pid=1860&offer_id=21';
-            var link_adstera = 'https://www.effectivegatecpm.com/xr7j10z1r?key=73a9402da2964f3c92209293558508e5';
-            window.open(link_utama, '_blank');
-            window.location.href = link_adstera;
-        }
-        </script>
-      </body>
-    </html>
-  `;
+    </div>
+    <div id="legalModal" class="legal-modal-overlay"><div class="legal-modal-box"><span style="position:absolute; top:20px; right:20px; cursor:pointer; font-size:24px; color: #94a3b8;" onclick="closeLegal()">&times;</span><div id="legalContent"></div></div></div>
+    <div class="mobile-sticky-bar">${mobileStickyHtml}</div>
+    <script>
+      function openLegal(type) {
+        var modal = document.getElementById('legalModal'); var content = document.getElementById('legalContent'); var domain = "${rawHostname}";
+        if(type === 'about') { content.innerHTML = '<h2>About Us</h2><p>Welcome to <strong>' + domain + '</strong>. We help readers discover their next great story.</p>'; }
+        if(type === 'disclaimer') { content.innerHTML = '<h2>Disclaimer</h2><p><strong>' + domain + '</strong> participates in various affiliate programs.</p>'; }
+        if(type === 'contact') { content.innerHTML = '<h2>Contact Us</h2><p>Reach us at: <strong>support@' + domain + '</strong></p>'; }
+        if(type === 'tos') { content.innerHTML = '<h2>Terms of Service</h2><p>By accessing <strong>' + domain + '</strong>, you agree to our terms.</p>'; }
+        modal.style.display = 'flex';
+      }
+      function closeLegal() { document.getElementById('legalModal').style.display = 'none'; }
+    </script>
+</body>
+</html>`;
 }
 
-// --- HANDLER UTAMA ---
 export async function onRequestGet(context) {
   const { env, params, request } = context; 
   const db = env.DB;
+  const url = new URL(request.url);
+  const countryCode = (request.cf ? request.cf.country : "US") || "US";
+  const ACTUAL_HOSTNAME = request.headers.get("X-Forwarded-Host") || request.headers.get("host") || url.hostname;
+  const cacheKey = new Request(url.toString() + "?geo=" + countryCode, request);
+  const cache = caches.default;
+  let response = await cache.match(cacheKey);
+  if (response) return response;
 
   try {
-    const url = new URL(request.url);
-    const SITE_URL = url.origin;
-    const uniqueCode = params.id; 
-    const post = await getPost(db, uniqueCode);
-
-    // 1. JIKA POST TIDAK ADA -> TAMPILKAN 404 (FAKE PDF SIGNUP)
-    if (!post) {
-      const html404 = render404Page();
-      return new Response(html404, { 
-        status: 404,
-        headers: { "Content-Type": "text/html;charset=UTF-8" }
-      });
-    }
-
-    // 2. JIKA POST ADA -> TAMPILKAN POST (DENGAN TOMBOL SIGNUP JUGA)
-    const html = renderPage(post, SITE_URL);
-    return new Response(html, {
-      headers: {
-        "Content-Type": "text/html;charset=UTF-8",
-        "Cache-Control": "s-maxage=3600",
-      },
-    });
-
-  } catch (e) {
-    return new Response(`Server error: ${e.message}`, { status: 500 });
-  }
+    let post = await getPostFromDB(db, params.id);
+    if (!post) post = await getDataFallback(params.id);
+    const html = renderBookPage(post, ACTUAL_HOSTNAME, countryCode);
+    response = new Response(html, { headers: { "Content-Type": "text/html;charset=UTF-8", "Cache-Control": "public, max-age=31536000" } });
+    context.waitUntil(cache.put(cacheKey, response.clone()));
+    return response;
+  } catch (e) { return new Response("Error: " + e.message, { status: 500 }); }
 }
