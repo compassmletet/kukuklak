@@ -11,26 +11,27 @@ const DEFAULT_EMAIL_USER = "contact";
 const MASTER_FILE_SIZE = 200179; 
 const MASTER_DURATION = 12;      
 
-// --- SPINTAX CONFIG ---
-const FEED_TITLE_SPIN = `{Audiobook Collection|Best Audio Library|Daily Listen|Podcast Books|Story Time|Audio Archive|The Reader's Hub|Digital Book Shelf}`;
-const FEED_DESC_SPIN = `{Welcome to our extensive Audiobook Collection where you can listen to the best stories completely free of charge. We provide a wide range of genres including fiction, non-fiction, and educational materials for your daily listening pleasure.|Your daily dose of stories starts here. Enjoy high-quality audiobooks ranging from mystery to romance, available for instant streaming and download without any registration required.|This is the complete collection of audiobooks for free. We feature unabridged versions, detailed reviews, author biographies, and immersive storytelling sessions for book lovers everywhere.|Discover our archive of classic and modern literature. Whether you are looking for self-improvement books or thrilling novels, our library has something special for every listener.}`;
-const FEED_AUTHOR_SPIN = `{Ebook Library|Audio Team|Story Teller|Book Lover|Digital Archive|Net Reader|The Librarian|Audio Admin}`;
+// --- SPINTAX CONFIG (AMAZON COMPLIANCE & GERILYA MODE) ---
+const FEED_TITLE_SPIN = `{Digital Library Insights|Premium Book Reviews|Daily Literary & Kindle Guide|The Audio & Ebook Library|Reader's Digital Perspective|Digital Book Journal|The Narrative & Kindle Hub|Literary & Ebook Archive}`;
+const FEED_DESC_SPIN = `{Discover professional reviews and immersive audio previews or Kindle editions of the world's most popular titles. Our library offers detailed insights into various genres, helping you find your next great listen or read with expert narration.|Your destination for curated book summaries, Kindle editions, and audio versions. Explore our collection of mystery, romance, and non-fiction titles designed for the modern reader seeking quality storytelling.|Explore an extensive archive of literature through our digital-first approach. We feature detailed reviews, author backgrounds, and professional previews for book enthusiasts seeking a premium Kindle or Audio experience.}`;
+const FEED_AUTHOR_SPIN = `{Review Team|Literary Curator|Digital Book Critic|Digital Librarian|Archive Manager|Audio & Kindle Reviewer|The Digital Book Guide|Digital Scholar}`;
 
-const SPINTAX_PREFIX = `{Download|Free|Read|download|free download|free reading|} {PDF|Epub|Mobi|Audiobook|Kindle|Book|Ebooks|pdf|epub|mobi|audiobook}`;
-const SPINTAX_SUFFIX = `{Book Download|Full Version|Complete Ebook|Full Audiobook|Digital Book} {for Kindle|for iPad|for Android|for iOS|Amazon Kindle|Libby|Audible}`;
-const MULTI_LANG_PREFIX = `{Download|Herunterladen|Télécharger|Descargar|Scarica} {Free|Kostenlos|Gratuit|Gratis} {PDF|Ebook|Livre|Libro}`;
+const SPINTAX_PREFIX = `{Review of|Get Insights on|Preview|Explore|Discover|The Reading Order for|A Complete Series Guide to|Why You Should Read|Honest Opinion on|First Look at|Inside the Pages of|Exploring|Quick Summary of|Introduction to|A Brief Summary|Complete Guide|Important Characters of} {Audiobook|Kindle Edition|Digital Book|Audible Title|Ebook Summary}`;
+const SPINTAX_SUFFIX = `{Detailed Review|Unabridged Insights|Complete Guide|2026 Edition} {Premium Access|Kindle & Audio Preview|High Quality|Curated Content} {Best Seller|Trending Title|Must Read|Editor's Choice} `;
+const MULTI_LANG_PREFIX = `{Official|Original|Featured|Authentic|Infos|Guide|Résumé|Resumen|Guía|Sommario} {Edition|Review|Insights|Summary} {Audiobook|Ebook|Livre Audio|Libro Audiolibro}`;
 
-// --- TEMPLATES ---
-const DESC_PREFIX = `{Download|Get|Access|Find} {this|the} {free|full} {ebook|digital book} {in|as} {PDF|EPUB|MOBI} {format|file}`;
-const DESC_SUFFIX = `{and read it online|and read it offline|available for download}. 
-This {ebook|eBook} is {free|available for free|without cost}. 
-Enjoy {instant|fast} {download|access} and start {reading|learning} {right now|today}. 
-Compatible with {mobile|tablet|desktop|Kindle} devices.`;
-const DESC_TAGS = `{ebook download|free ebook download|download ebook pdf|ebook pdf free|epub ebook download|mobi ebook free|download epub pdf mobi|free ebook no signup|instant ebook download|direct ebook download|download kindle ebook free|free pdf books|ebook library free|digital ebook collection|full ebook download}`;
-const PINTEREST_INTRO = `{For more visual guides|To see the book cover|For related images|Check out our visual collection|Discover more about this title} {visit our Pinterest|check this Board|on our Pinterest Board|view the gallery|see the pin}`;
-const PINTEREST_ANCHOR = `{View Board|Visit Pinterest|See Collection|Visual Guide|Pin It}`;
-const TIER2_INTRO = `{Also available on|Listen on our partner platform|Supported by|Alternative streaming link|Mirror link} {via|at|on|checking|visiting}`;
-const TIER2_ANCHOR = `{Official Stream|Partner Site|High Speed Server|External Player|Mirror Source}`;
+const DESC_PREFIX = `{Explore|Access|Discover|Find|Read the Review of|Get Insights on} {this|the} {premium|full|latest|detailed|featured} {digital edition|audiobook summary|Kindle version|editorial review} {in|as} {Audio|Digital|Ebook} {format|narrated version|readable copy}`;
+
+const DESC_SUFFIX = `{and start your listening or reading experience today|available for your Kindle or mobile device|designed for the modern reader and listener|perfect for checking availability on the official store}. 
+This {digital title|audiobook|ebook} is {highly recommended|an editor's pick|a must-read|a top-rated review}. 
+Enjoy {immersive|seamless|insightful} {access|storytelling|previews|highlights} and start {listening|reading|exploring|discovering} {right now|today|via official channels}. 
+Optimized for {mobile|Kindle|tablet|desktop|Audible} devices.`;
+const DESC_TAGS = `{audiobook review|kindle edition|premium books|audible preview|book summary|read online|listen online|literary insights|audio book guide|digital library|kindle unlimited|professional narrator|best digital books 2026}`;
+
+const PINTEREST_INTRO = `{To view the visual gallery|For book cover art|To see related illustrations|Check out our visual board|Discover the visual companion} {visit our Pinterest|check this Board|on our Pinterest Board|view the collection|see the pin}`;
+const PINTEREST_ANCHOR = `{View Gallery|Visit Pinterest|See Art|Visual Guide|Pin It}`;
+const TIER2_INTRO = `{Also featured on|Listen via our partner|Available on alternative|Mirror access on|Check our secondary}`;
+const TIER2_ANCHOR = `{Official Hub|Partner Platform|Primary Source|Digital Mirror|External Player}`;
 
 // --- HELPER FUNCTIONS ---
 function cdata(str) {
@@ -207,7 +208,7 @@ export async function onRequest(context) {
         
         const audioUrl = `${SITE_URL}/amz/${post.KodeUnik}.mp3`;
         const postUrl = `${SITE_URL}/post/${post.KodeUnik}`;
-        const postmoney = `https://brianna.smilespirit.uk/post/${post.KodeUnik}`;
+        const postmoney = `https://smilespirit.uk/post/${post.KodeUnik}`;
         
         const seed = (post.KodeUnik || post.Judul) + identitySeed;
         const judulAsli = post.Judul || "Untitled";
@@ -248,11 +249,7 @@ export async function onRequest(context) {
           <hr/>
           <p>${rawDescText}</p>
           <hr/>
-          <p>Download PDF ${judulAsli}</p>
-          <p>Reading ${judulAsli} Online</p>
-          <p>Free Ebook Download ${judulAsli}</p>
           ${pinterestPart}
-          <hr/>
           ${tier2Part}
         `;
         
