@@ -207,7 +207,7 @@ export async function onRequest(context) {
         
         const audioUrl = `${SITE_URL}/amz/${post.KodeUnik}.mp3`;
         const postUrl = `${SITE_URL}/post/${post.KodeUnik}`;
-        const postmoney = `https://brianna.smilespirit.uk/post/${post.KodeUnik}`;
+        const postmoney = `https://brocenter.uk/post/${post.KodeUnik}`;
         
         const seed = (post.KodeUnik || post.Judul) + identitySeed;
         const judulAsli = post.Judul || "Untitled";
