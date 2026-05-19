@@ -160,7 +160,7 @@ export async function onRequest(context) {
     const lastBuildDate = baseDate.toUTCString();
     
     const picsumSeed = identitySeed || "default";
-    const channelCoverUrl = `${SITE_URL}/image-proxy?url=${encodeURIComponent(`https://picsum.photos/seed/${picsumSeed}/1400/1400`)}&amp;ext=.jpg`;
+    const channelCoverUrl = `${encodeURIComponent(`https://picsum.photos/seed/${picsumSeed}/1400/1400`)}&amp;ext=.jpg`;
 
     // XML GENERATION
     let xml = `<?xml version="1.0" encoding="UTF-8"?>
@@ -253,7 +253,7 @@ export async function onRequest(context) {
           ${tier2Part}
         `;
         
-        let episodeImage = post.Image ? `${SITE_URL}/image-proxy?url=${encodeURIComponent(post.Image)}&amp;ext=.jpg` : channelCoverUrl;
+        let episodeImage = post.Image ? `${encodeURIComponent(post.Image)}&amp;ext=.jpg` : channelCoverUrl;
 
         xml += `<item>
 <title>${cdata(finalTitle)}</title>
